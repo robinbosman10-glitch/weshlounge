@@ -162,6 +162,11 @@ async function withLock(id, work) {
 }
 
 export async function startGiveaway(interaction, settings) {
+  try { await store.assertWritable(); }
+  catch (error) {
+    console.error(`Giveawayopslag niet schrijfbaar: ${error.code ?? error.message}`);
+    return '❌ De giveawayopslag is niet schrijfbaar. Er is geen bericht geplaatst. Controleer de schrijfrechten van het Railway-volume.';
+  }
   const duration = parseDuration(settings.duration);
   if (!duration) return '❌ Gebruik een duur van 1 minuut t/m 90 dagen, bijvoorbeeld `30m`, `2h`, `3d` of `1w`.';
   const channel = settings.channel || interaction.channel;

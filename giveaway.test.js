@@ -149,3 +149,20 @@ test('formulierinstellingen publiceren dezelfde banner, knoppen en opgeslagen gi
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('onbeschikbare opslag wordt gecontroleerd voordat een Discordbericht wordt verstuurd', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'wesh-storage-check-'));
+  const oldPath = process.env.GIVEAWAY_DATA_FILE;
+  process.env.GIVEAWAY_DATA_FILE = join(directory, 'missing', 'giveaways.json');
+  const module = await import(`./giveaway.js?write-check=${Date.now()}`);
+  let sent = 0;
+  try {
+    const result = await module.startGiveaway({ channel: { send: async () => { sent++; } } }, { prize: 'Nitro', duration: '1h' });
+    assert.match(result, /geen bericht geplaatst/);
+    assert.equal(sent, 0);
+  } finally {
+    if (oldPath === undefined) delete process.env.GIVEAWAY_DATA_FILE;
+    else process.env.GIVEAWAY_DATA_FILE = oldPath;
+    await rm(directory, { recursive: true, force: true });
+  }
+});

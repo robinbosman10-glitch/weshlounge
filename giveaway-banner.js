@@ -73,7 +73,7 @@ export async function renderGiveawayBanner({ prize, winners = 1, customBackgroun
         <linearGradient id="accent" x1="0" x2="1"><stop stop-color="${theme.start}"/><stop offset="1" stop-color="${theme.end}"/></linearGradient>
         <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <style>
-          text { font-family: Inter, Arial, sans-serif; }
+          text { font-family: DejaVu Sans, sans-serif; }
           .small { fill:#d9deed; font-size:18px; font-weight:700; letter-spacing:3px; }
           .drop { fill:white; font-size:29px; font-weight:900; letter-spacing:2px; }
           .prize { fill:white; font-size:${fontSize}px; font-weight:900; letter-spacing:-1px; paint-order:stroke; stroke:#070913; stroke-width:5px; }
@@ -92,7 +92,7 @@ export async function renderGiveawayBanner({ prize, winners = 1, customBackgroun
       ${title}
       <rect x="505" y="440" width="620" height="2" fill="url(#accent)" opacity=".8"/>
       <text x="505" y="488" class="meta">${winners} ${winners === 1 ? 'WINNAAR' : 'WINNAARS'}  •  AUTOMATISCHE LOTING</text>
-      <text x="505" y="526" fill="#aeb5c8" font-family="Inter, Arial" font-size="19">DOE MEE VIA DE KNOP ONDER DE GIVEAWAY</text>
+      <text x="505" y="526" fill="#aeb5c8" font-family="DejaVu Sans" font-size="19">DOE MEE VIA DE KNOP ONDER DE GIVEAWAY</text>
     </svg>`);
   return sharp(base).composite([
     { input: overlay, left: 0, top: 0 },

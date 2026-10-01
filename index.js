@@ -31,7 +31,13 @@ async function register(guild) {
 }
 client.once(Events.ClientReady, async ready => {
   console.log(`${ready.user.tag} is online.`);
-  await initializeGiveaways(ready);
+  try { await initializeGiveaways(ready); }
+  catch (error) {
+    console.error(`Giveawayopslag kon niet worden geopend (${error.code ?? error.message}). Controleer het volume en de schrijfrechten.`);
+    client.destroy();
+    process.exitCode = 1;
+    return;
+  }
   for (const guild of ready.guilds.cache.values()) await register(guild);
 });
 client.on(Events.GuildCreate, register);

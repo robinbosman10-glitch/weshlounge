@@ -1,11 +1,10 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const defaultPath = fileURLToPath(new URL('./data/giveaways.json', import.meta.url));
+import { randomUUID } from 'node:crypto';
+import { giveawayDataPath } from './runtime.js';
 
 export class GiveawayStore {
-  constructor(path = process.env.GIVEAWAY_DATA_FILE || defaultPath) {
+  constructor(path = giveawayDataPath()) {
     this.path = resolve(path);
     this.items = new Map();
     this.writeQueue = Promise.resolve();
@@ -19,7 +18,15 @@ export class GiveawayStore {
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
     }
+    await this.assertWritable();
     return this;
+  }
+
+  async assertWritable() {
+    const temporary = `${this.path}.check-${randomUUID()}`;
+    const file = await open(temporary, 'wx', 0o600);
+    try { await file.close(); }
+    finally { await rm(temporary, { force: true }); }
   }
 
   all() { return [...this.items.values()]; }
@@ -27,8 +34,14 @@ export class GiveawayStore {
   findByMessage(messageId) { return this.all().find(item => item.messageId === messageId); }
 
   async set(item) {
+    const previous = this.items.get(item.id);
     this.items.set(item.id, item);
-    await this.persist();
+    try { await this.persist(); }
+    catch (error) {
+      if (previous) this.items.set(item.id, previous);
+      else this.items.delete(item.id);
+      throw error;
+    }
     return item;
   }
 

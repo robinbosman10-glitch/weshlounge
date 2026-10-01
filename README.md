@@ -34,6 +34,8 @@ Typ alleen `/giveaway`: er zijn geen verplichte slashopties meer. Vul het formul
 
 Geen privileged intents nodig. Het paneel verschijnt voor iedereen; de bevestiging van het plaatsen verschijnt alleen voor de beheerder. Zorg dat de bot met de scopes `bot` en `applications.commands` is toegevoegd als het slashcommando ontbreekt. Draai één botinstantie/replica.
 
+Het startscript herstelt de eigenaar van de gemounte data-map en bestaande giveawaydatabase voordat het naar de `node`-gebruiker overschakelt. Gebruik de standaard startopdracht `npm start`, zodat deze controle wordt uitgevoerd. Het Dockerfile installeert Fontconfig en DejaVu Sans voor de prijs- en type-tekst op de banners. De bot controleert de opslag bij het opstarten en vóór publicatie; bij ontbrekende schrijfrechten wordt geen tijdelijk giveawaybericht geplaatst.
+
 ## Advertenties
 
 Beheerders kunnen `/ad discord-link:… rol:… lid:…` gebruiken. De bot plaatst een gewoon bericht met `@rol - @lid`, een lege regel en de uitnodigingslink. Er wordt geen eigen embed toegevoegd; Discord kan zelf een uitnodigingspreview tonen. Alleen de gekozen rol en gebruiker mogen worden gepingd. De rol moet vermeldbaar zijn, of de bot moet toestemming hebben om alle rollen te vermelden. Het gekozen lid moet in de server zitten. De bevestiging is privé; de advertentie is voor het hele kanaal zichtbaar.
