@@ -3,9 +3,10 @@ import { buildPanel, command, roles, toggleRole } from './panel.js';
 import { adCommand, buildAd, normalizeInvite } from './ad.js';
 import {
   giveawayCommand, giveawayStopCommand, handleGiveawayButton,
-  initializeGiveaways, isGiveawayButton, startGiveaway, stopGiveaway,
+  initializeGiveaways, isGiveawayButton, stopGiveaway,
   stopGiveawayScheduler,
 } from './giveaway.js';
+import { giveawayForms, isGiveawayFormInteraction } from './giveaway-form.js';
 
 const token = process.env.DISCORD_TOKEN || process.env.TOKEN;
 if (!token) {
@@ -39,13 +40,18 @@ client.on(Events.InteractionCreate, async interaction => {
   const isPanel = interaction.isChatInputCommand() && interaction.commandName === 'rollenpaneel';
   const isAd = interaction.isChatInputCommand() && interaction.commandName === 'ad';
   const isGiveawayCommand = interaction.isChatInputCommand()
-    && ['giveaway', 'giveawaystop'].includes(interaction.commandName);
+    && interaction.commandName === 'giveawaystop';
+  const giveawayForm = isGiveawayFormInteraction(interaction);
   const giveawayButton = isGiveawayButton(interaction);
   const choice = interaction.isButton() ? roles[interaction.customId] : undefined;
-  if (!isPanel && !isAd && !isGiveawayCommand && !giveawayButton && !choice) return;
+  if (!isPanel && !isAd && !isGiveawayCommand && !giveawayForm && !giveawayButton && !choice) return;
   try {
     if (!interaction.inGuild() || !interaction.guild || !enabled(interaction.guild)) {
       await interaction.reply({ content: 'Dit paneel werkt alleen in de ingestelde server.', flags: MessageFlags.Ephemeral });
+      return;
+    }
+    if (giveawayForm) {
+      await giveawayForms.handle(interaction);
       return;
     }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -54,9 +60,7 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.editReply('❌ Alleen beheerders kunnen dit commando gebruiken.');
         return;
       }
-      const result = interaction.commandName === 'giveaway'
-        ? await startGiveaway(interaction)
-        : await stopGiveaway(interaction, client);
+      const result = await stopGiveaway(interaction, client);
       await interaction.editReply(result);
       return;
     }

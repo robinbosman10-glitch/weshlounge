@@ -13,12 +13,14 @@ Klikken geeft de rol; opnieuw klikken verwijdert deze. Bevestigingen zijn privé
 
 | Commando | Werking |
 | --- | --- |
-| `/giveaway` | Start een giveaway met prijs, duur, aantal winnaars, beschrijving, kanaal, pingrol, vereiste rol en optionele eigen achtergrond. |
+| `/giveaway` | Opent een formulier voor prijs, duur, aantal winnaars en beschrijving. Extra instellingen openen een tweede formulier met kanaal, pingrol, vereiste rol, ping aan/uit en een optionele eigen afbeelding. Daarna publiceer je via het privé-overzicht. |
 | `/giveawaystop` | Stopt de hele actieve giveaway direct. De knoppen worden uitgezet en er wordt **geen winnaar** geloot. Een bericht-ID of link is optioneel; zonder ID kiest de bot de nieuwste actieve giveaway in het kanaal. |
 
 De giveaway heeft knoppen voor **Deelnemen**, **Deelnemers** en **Verlaten**. Het deelnemersaantal wordt live bijgewerkt, dubbel deelnemen is onmogelijk en een optionele vereiste rol wordt gecontroleerd. Na het verstrijken van de tijd kiest de bot automatisch unieke winnaars en maakt hij die bekend. Actieve giveaways, deelnemers en eindtijden worden opgeslagen en na een herstart hervat.
 
-Elke giveaway krijgt automatisch een 1200×600-banner met het echte Wesh Lounge-logo. De exacte prijs komt groot in beeld. Nitro, PlayStation, Xbox, Steam, giftcards, geld en games krijgen automatisch een passende titel en accentkleur. Een beheerder kan bij `afbeelding` ook een eigen achtergrond tot 10 MB meegeven; het logo en de prijs worden daar automatisch overheen gezet. Zonder gekozen `pingrol` gebruikt de bot standaard Giveaway-ping (`1516850805322285258`). Met `ping:nee` wordt geen rol gepingd.
+Elke giveaway krijgt automatisch een 1200×600-banner met het echte Wesh Lounge-logo. De exacte prijs komt groot in beeld. Nitro, PlayStation, Xbox, Steam, giftcards, geld en games krijgen automatisch een passende titel en accentkleur. Een beheerder kan in het instellingenformulier ook een eigen achtergrond tot 10 MB uploaden; het logo en de prijs worden daar automatisch overheen gezet. Zonder gekozen pingrol gebruikt de bot standaard Giveaway-ping (`1516850805322285258`). Met de pingkeuze op Nee wordt geen rol gepingd.
+
+Typ alleen `/giveaway`: er zijn geen verplichte slashopties meer. Vul het formulier in, kies eventueel **Extra instellingen**, en klik op **Publiceren**. Je kunt gegevens vooraf aanpassen, een eigen afbeelding weer vervangen door de automatische banner, of het formulier annuleren. Een formulier blijft 30 minuten beschikbaar en kan alleen door de maker worden gebruikt. Bestaande actieve giveaways blijven gewoon werken.
 
 ## Online zetten met Railway
 

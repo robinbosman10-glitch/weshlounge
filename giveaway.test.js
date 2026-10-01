@@ -109,3 +109,43 @@ test('stop annuleert werkelijk en hervatten loot daarna geen winnaar', async () 
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('formulierinstellingen publiceren dezelfde banner, knoppen en opgeslagen giveaway', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'wesh-form-publish-'));
+  const path = join(directory, 'giveaways.json');
+  const oldPath = process.env.GIVEAWAY_DATA_FILE;
+  process.env.GIVEAWAY_DATA_FILE = path;
+  const module = await import(`./giveaway.js?publish-test=${Date.now()}`);
+  let payload;
+  const channel = {
+    id: '222222222222222222', type: 0, isTextBased: () => true,
+    permissionsFor: () => ({ has: () => true }),
+    send: async data => {
+      payload = data;
+      return { id: '333333333333333333', url: 'https://discord.com/channels/111111111111111111/222222222222222222/333333333333333333' };
+    },
+    toString: () => '<#222222222222222222>',
+  };
+  try {
+    await module.initializeGiveaways({});
+    const result = await module.startGiveaway({ channel, guildId: '111111111111111111',
+      user: { id: '555555555555555555' }, guild: { members: { me: {} } } },
+    { prize: 'PlayStation tegoed', duration: '3d', winnerCount: 2, description: 'Custom tekst', channel, ping: false,
+      requiredRole: { id: '666666666666666666' } });
+    assert.match(result, /✅ Giveaway gestart/);
+    assert.equal(payload.embeds[0].toJSON().description, 'Custom tekst');
+    assert.equal(payload.files.length, 2);
+    assert.equal(payload.components[0].toJSON().components.length, 3);
+    assert.deepEqual(payload.allowedMentions, { parse: [] });
+    const saved = JSON.parse(await readFile(path, 'utf8'))[0];
+    assert.equal(saved.winnerCount, 2);
+    assert.equal(saved.requiredRoleId, '666666666666666666');
+    assert.equal(saved.status, 'active');
+    assert.equal(saved.messageId, '333333333333333333');
+  } finally {
+    module.stopGiveawayScheduler();
+    if (oldPath === undefined) delete process.env.GIVEAWAY_DATA_FILE;
+    else process.env.GIVEAWAY_DATA_FILE = oldPath;
+    await rm(directory, { recursive: true, force: true });
+  }
+});

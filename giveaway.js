@@ -15,18 +15,8 @@ let scheduler;
 
 export const giveawayCommand = new SlashCommandBuilder()
   .setName('giveaway')
-  .setDescription('Start een custom Wesh Lounge-giveaway.')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-  .addStringOption(option => option.setName('prijs').setDescription('Wat geef je weg?').setRequired(true).setMaxLength(80))
-  .addStringOption(option => option.setName('duur').setDescription('Bijvoorbeeld: 30m, 2h, 3d of 1w').setRequired(true).setMaxLength(30))
-  .addIntegerOption(option => option.setName('winnaars').setDescription('Aantal winnaars (standaard 1)').setMinValue(1).setMaxValue(20))
-  .addStringOption(option => option.setName('beschrijving').setDescription('Extra tekst onder de titel').setMaxLength(500))
-  .addChannelOption(option => option.setName('kanaal').setDescription('Kanaal waarin de giveaway komt')
-    .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement))
-  .addRoleOption(option => option.setName('pingrol').setDescription('Rol die bij de giveaway wordt gepingd'))
-  .addRoleOption(option => option.setName('vereisterol').setDescription('Rol die deelnemers verplicht nodig hebben'))
-  .addBooleanOption(option => option.setName('ping').setDescription('Giveaway-ping versturen? Standaard: ja'))
-  .addAttachmentOption(option => option.setName('afbeelding').setDescription('Optionele eigen achtergrond voor de giveaway-banner'));
+  .setDescription('Open het custom Wesh Lounge-giveawayformulier.')
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 export const giveawayStopCommand = new SlashCommandBuilder()
   .setName('giveawaystop')
@@ -171,10 +161,10 @@ async function withLock(id, work) {
   }
 }
 
-export async function startGiveaway(interaction) {
-  const duration = parseDuration(interaction.options.getString('duur', true));
+export async function startGiveaway(interaction, settings) {
+  const duration = parseDuration(settings.duration);
   if (!duration) return '❌ Gebruik een duur van 1 minuut t/m 90 dagen, bijvoorbeeld `30m`, `2h`, `3d` of `1w`.';
-  const channel = interaction.options.getChannel('kanaal') || interaction.channel;
+  const channel = settings.channel || interaction.channel;
   if (!channel?.isTextBased() || ![ChannelType.GuildText, ChannelType.GuildAnnouncement].includes(channel.type)) {
     return '❌ Kies een gewoon tekst- of aankondigingskanaal.';
   }
@@ -182,8 +172,8 @@ export async function startGiveaway(interaction) {
   if (!permissions?.has(requiredChannelPermissions(channel))) {
     return '❌ Ik mis in dat kanaal: bekijken, berichten sturen, geschiedenis lezen, embeds plaatsen of bestanden toevoegen.';
   }
-  const shouldPing = interaction.options.getBoolean('ping') ?? true;
-  const selectedPingRole = interaction.options.getRole('pingrol');
+  const shouldPing = settings.ping ?? true;
+  const selectedPingRole = settings.pingRole;
   const pingRole = shouldPing
     ? selectedPingRole || await interaction.guild.roles.fetch(defaultGiveawayPingRoleId).catch(() => null)
     : null;
@@ -191,13 +181,13 @@ export async function startGiveaway(interaction) {
   if (pingRole && !pingRole.mentionable && !permissions.has(PermissionFlagsBits.MentionEveryone)) {
     return '❌ Ik kan de gekozen pingrol niet vermelden. Maak hem vermeldbaar of geef de bot toestemming om rollen te vermelden.';
   }
-  const attachment = interaction.options.getAttachment('afbeelding');
+  const attachment = settings.attachment;
   let customBackground;
   try { customBackground = await readCustomBackground(attachment); }
   catch { return '❌ De eigen afbeelding moet een geldige afbeelding van maximaal 10 MB zijn.'; }
-  const prize = interaction.options.getString('prijs', true).trim();
-  const winnerCount = interaction.options.getInteger('winnaars') || 1;
-  const requiredRole = interaction.options.getRole('vereisterol');
+  const prize = settings.prize.trim();
+  const winnerCount = settings.winnerCount || 1;
+  const requiredRole = settings.requiredRole;
   if (requiredRole?.id === interaction.guildId) return '❌ Kies een specifieke vereiste rol of laat die optie leeg.';
   const giveaway = {
     id: randomUUID().replaceAll('-', '').slice(0, 12),
@@ -205,7 +195,7 @@ export async function startGiveaway(interaction) {
     channelId: channel.id,
     messageId: null,
     prize,
-    description: interaction.options.getString('beschrijving')?.trim() || null,
+    description: settings.description?.trim() || null,
     hostId: interaction.user.id,
     requiredRoleId: requiredRole?.id || null,
     pingRoleId: pingRole?.id || null,
