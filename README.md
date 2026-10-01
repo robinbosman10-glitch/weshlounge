@@ -9,14 +9,26 @@ Paars rollenpaneel met het Wesh Lounge-logo en twee knoppen:
 
 Klikken geeft de rol; opnieuw klikken verwijdert deze. Bevestigingen zijn privé. Beide rollen kunnen tegelijk worden geclaimd. Oude panelen blijven na een herstart werken; er is geen database nodig.
 
+## Custom giveaways
+
+| Commando | Werking |
+| --- | --- |
+| `/giveaway` | Start een giveaway met prijs, duur, aantal winnaars, beschrijving, kanaal, pingrol, vereiste rol en optionele eigen achtergrond. |
+| `/giveawaystop` | Stopt de hele actieve giveaway direct. De knoppen worden uitgezet en er wordt **geen winnaar** geloot. Een bericht-ID of link is optioneel; zonder ID kiest de bot de nieuwste actieve giveaway in het kanaal. |
+
+De giveaway heeft knoppen voor **Deelnemen**, **Deelnemers** en **Verlaten**. Het deelnemersaantal wordt live bijgewerkt, dubbel deelnemen is onmogelijk en een optionele vereiste rol wordt gecontroleerd. Na het verstrijken van de tijd kiest de bot automatisch unieke winnaars en maakt hij die bekend. Actieve giveaways, deelnemers en eindtijden worden opgeslagen en na een herstart hervat.
+
+Elke giveaway krijgt automatisch een 1200×600-banner met het echte Wesh Lounge-logo. De exacte prijs komt groot in beeld. Nitro, PlayStation, Xbox, Steam, giftcards, geld en games krijgen automatisch een passende titel en accentkleur. Een beheerder kan bij `afbeelding` ook een eigen achtergrond tot 10 MB meegeven; het logo en de prijs worden daar automatisch overheen gezet. Zonder gekozen `pingrol` gebruikt de bot standaard Giveaway-ping (`1516850805322285258`). Met `ping:nee` wordt geen rol gepingd.
+
 ## Online zetten met Railway
 
 1. Maak een Railway-service vanaf deze GitHub-repository. Het Dockerfile installeert de bot en start hem.
 2. Voeg onder Variables `DISCORD_TOKEN` toe met het token van je eigen bot. Zet je token nooit in GitHub of in een chatbericht. `TOKEN` wordt ook herkend voor bestaande hostinginstellingen.
 3. Optioneel: voeg `GUILD_ID` toe om registratie en gebruik tot één server te beperken. Standaard wordt het commando automatisch in alle servers van deze bot geregistreerd.
-4. Geef de bot **Rollen beheren** en plaats de botrol **boven beide pingrollen**.
-5. Geef de bot in het paneelkanaal **Kanaal bekijken**, **Berichten verzenden**, **Links insluiten** en **Bestanden bijvoegen**.
-6. Wacht tot de logs melden dat de bot online is en `/rollenpaneel` is geregistreerd. Gebruik als beheerder `/rollenpaneel` in het gewenste kanaal.
+4. Voeg een Railway Volume toe met mountpad `/app/data`, zodat actieve giveaways en deelnemers ook na een nieuwe deployment bewaard blijven.
+5. Geef de bot **Rollen beheren** en plaats de botrol **boven beide pingrollen**.
+6. Geef de bot in de gebruikte kanalen **Kanaal bekijken**, **Berichten verzenden**, **Berichtgeschiedenis lezen**, **Links insluiten** en **Bestanden bijvoegen**. Maak Giveaway-ping vermeldbaar of geef de bot toestemming om rollen te vermelden.
+7. Wacht tot de logs melden dat de bot online is en de commando's zijn geregistreerd. Gebruik als beheerder `/rollenpaneel` in het gewenste kanaal.
 
 Geen privileged intents nodig. Het paneel verschijnt voor iedereen; de bevestiging van het plaatsen verschijnt alleen voor de beheerder. Zorg dat de bot met de scopes `bot` en `applications.commands` is toegevoegd als het slashcommando ontbreekt. Draai één botinstantie/replica.
 
@@ -26,4 +38,4 @@ Beheerders kunnen `/ad discord-link:… rol:… lid:…` gebruiken. De bot plaat
 
 ## Lokaal uitvoeren
 
-Node.js 24.17 of hoger. Kopieer `.env.example` naar `.env`, vul het token in en voer `npm ci` en `npm start` uit. `npm test` controleert het paneel, de rolkoppelingen en het toekennen/verwijderen met gemockte Discord-aanroepen.
+Node.js 24.17 of hoger. Kopieer `.env.example` naar `.env`, vul het token in en voer `npm ci` en `npm start` uit. `npm test` controleert het rollenpaneel, advertenties, dynamische banners, loting, stoppen zonder winnaar en opslag na een herstart. `npm run preview:giveaway` maakt twee echte bannervoorbeelden in `output/`.
