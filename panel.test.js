@@ -2,11 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildPanel, command, roles, toggleRole } from './panel.js';
 
-test('paneel koppelt beide knoppen aan de opgegeven rollen en het logo', () => {
+test('paneel koppelt alle melding- en gamerollen aan de juiste knoppen', () => {
   const panel = buildPanel();
-  assert.equal(roles['wesh:giveaway'].id, '1516850805322285258');
-  assert.equal(roles['wesh:gaming'].id, '1528781954416378027');
-  assert.deepEqual(panel.components[0].toJSON().components.map(b => b.custom_id), Object.keys(roles));
+  assert.deepEqual(Object.fromEntries(Object.entries(roles).map(([key, role]) => [key, role.id])), {
+    'wesh:giveaway': '1516850805322285258',
+    'wesh:gaming': '1528781954416378027',
+    'wesh:minecraft': '1555695172187062312',
+    'wesh:fortnite': '1559535598438580245',
+    'wesh:fivem': '1559535757310435408',
+    'wesh:callofduty': '559535941675262053',
+    'wesh:rainbowsix': '1559536185519640636',
+    'wesh:amongus': '1559536458333814926',
+    'wesh:leagueoflegends': '1557409898621567157',
+  });
+  const buttons = panel.components.flatMap(row => row.toJSON().components);
+  assert.deepEqual(buttons.map(button => button.custom_id), Object.keys(roles));
+  assert.deepEqual(panel.components.map(row => row.toJSON().components.length), [2, 4, 3]);
+  assert.ok(panel.components.every(row => row.toJSON().components.length <= 5));
   assert.equal(panel.embeds[0].toJSON().thumbnail.url, 'attachment://wesh-lounge.png');
   assert.equal(panel.files[0].name, 'wesh-lounge.png');
   assert.equal(command.toJSON().default_member_permissions, '8');

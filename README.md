@@ -6,6 +6,13 @@ Paars rollenpaneel met het Wesh Lounge-logo en twee knoppen:
 | --- | --- |
 | 🎉 Giveaway-ping | `1516850805322285258` |
 | 🎮 Gaming-ping | `1528781954416378027` |
+| ⛏️ Minecraft | `1555695172187062312` |
+| 🪂 Fortnite | `1559535598438580245` |
+| 🚗 FiveM | `1559535757310435408` |
+| 🎯 Call of Duty | `559535941675262053` |
+| 🛡️ Rainbow Six Siege | `1559536185519640636` |
+| 🚀 Among Us | `1559536458333814926` |
+| ⚔️ League of Legends | `1557409898621567157` |
 
 Klikken geeft de rol; opnieuw klikken verwijdert deze. Bevestigingen zijn privé. Beide rollen kunnen tegelijk worden geclaimd. Oude panelen blijven na een herstart werken; er is geen database nodig.
 
