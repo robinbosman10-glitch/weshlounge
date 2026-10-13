@@ -138,7 +138,7 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   } catch (error) {
     console.error(`Interactie mislukt: ${error.code ?? error.name}`);
-    const content = '❌ Dit is niet gelukt. Controleer de botrechten en probeer daarna opnieuw.';
+    const content = error.userMessage || '❌ Dit is niet gelukt. Controleer de botrechten en probeer daarna opnieuw.';
     try {
       if (interaction.deferred || interaction.replied) await interaction.editReply({ content });
       else await interaction.reply({ content, flags: MessageFlags.Ephemeral });
