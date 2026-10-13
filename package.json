@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env scripts/start-bot.js",
     "test": "node --test",
-    "preview:giveaway": "node scripts/render-giveaway-preview.js"
+    "preview:giveaway": "node scripts/render-giveaway-preview.js",
+    "preview:rules": "node scripts/render-server-rules-banner.js"
   },
   "engines": {
     "node": ">=24.17.0"

@@ -7,6 +7,8 @@ import {
   stopGiveawayScheduler,
 } from './giveaway.js';
 import { giveawayForms, isGiveawayFormInteraction } from './giveaway-form.js';
+import { syncServerRules } from './server-rules.js';
+import { sendMemberTagOnce } from './member-tag.js';
 
 const token = process.env.DISCORD_TOKEN || process.env.TOKEN;
 if (!token) {
@@ -38,6 +40,12 @@ client.once(Events.ClientReady, async ready => {
     process.exitCode = 1;
     return;
   }
+  await syncServerRules(ready)
+    .then(({ created }) => console.log(`Serverregels ${created ? 'geplaatst' : 'bijgewerkt'}.`))
+    .catch(error => console.error(`Serverregels konden niet worden geplaatst: ${error.code ?? error.message}`));
+  await sendMemberTagOnce(ready)
+    .then(({ sent }) => console.log(`Membertag ${sent ? 'verstuurd' : 'was al verstuurd'}.`))
+    .catch(error => console.error(`Membertag kon niet worden verstuurd: ${error.code ?? error.message}`));
   for (const guild of ready.guilds.cache.values()) await register(guild);
 });
 client.on(Events.GuildCreate, register);

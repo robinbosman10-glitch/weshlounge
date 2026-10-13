@@ -16,6 +16,12 @@ Paars rollenpaneel met het Wesh Lounge-logo en twee knoppen:
 
 Klikken geeft de rol; opnieuw klikken verwijdert deze. Bevestigingen zijn privé. Beide rollen kunnen tegelijk worden geclaimd. Oude panelen blijven na een herstart werken; er is geen database nodig.
 
+## Automatische serverberichten
+
+Bij het opstarten plaatst of vernieuwt de bot de officiële serverregels in kanaal `1427785483475222559`. De regels staan in één paarse embed met het Wesh Lounge-logo en de eigen Server Rules-banner. De bot zoekt eerst zijn bestaande regelsbericht en maakt daardoor geen duplicaat bij een herstart.
+
+Daarnaast verstuurt de bot één keer `<@&1427788437297172622>` in kanaal `1555192509209124935`. Alleen die rol mag worden gepingd. Als het bericht al tussen de recente kanaalberichten staat, wordt het niet opnieuw verstuurd.
+
 ## Custom giveaways
 
 | Commando | Werking |
