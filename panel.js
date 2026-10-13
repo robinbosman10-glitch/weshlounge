@@ -1,5 +1,6 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 export const roles = Object.freeze({
   'wesh:giveaway': { id: '1516850805322285258', label: 'Giveaway-ping', emoji: '🎉' },
@@ -45,14 +46,81 @@ function customEmojiData(emoji) {
 
 function roleIconEmojiName(role) {
   const iconPart = role.icon.replace(/[^a-z\d]/gi, '').slice(0, 8).toLowerCase();
-  return `wr_${role.id}_${iconPart}`;
+  return `wr2_${role.id}_${iconPart}`;
 }
 
 function panelError(message, code, cause) {
   return Object.assign(new Error(message, { cause }), { code, userMessage: `❌ ${message}` });
 }
 
-async function roleIconEmojis(guild, guildRoles) {
+async function transparentRoleIcon(url, fetchIcon) {
+  const response = await fetchIcon(url);
+  if (!response.ok) throw new Error(`ROLE_ICON_DOWNLOAD_${response.status}`);
+  const source = Buffer.from(await response.arrayBuffer());
+  const { data, info } = await sharp(source)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const pixels = info.width * info.height;
+  const visited = new Uint8Array(pixels);
+  const queue = new Int32Array(pixels);
+  let head = 0;
+  let tail = 0;
+  let alreadyTransparent = false;
+  const channels = info.channels;
+  const pixelOffset = pixel => pixel * channels;
+  const isWhiteBackground = pixel => {
+    const offset = pixelOffset(pixel);
+    if (data[offset + 3] < 240) {
+      alreadyTransparent = true;
+      return false;
+    }
+    return data[offset] >= 215 && data[offset + 1] >= 215 && data[offset + 2] >= 215;
+  };
+  const enqueue = pixel => {
+    if (visited[pixel] || !isWhiteBackground(pixel)) return;
+    visited[pixel] = 1;
+    queue[tail++] = pixel;
+  };
+
+  for (let x = 0; x < info.width; x += 1) {
+    enqueue(x);
+    enqueue((info.height - 1) * info.width + x);
+  }
+  for (let y = 1; y < info.height - 1; y += 1) {
+    enqueue(y * info.width);
+    enqueue(y * info.width + info.width - 1);
+  }
+
+  // Een afbeelding die al transparantie heeft hoeft niet opnieuw uitgeknipt te worden.
+  if (!alreadyTransparent) {
+    while (head < tail) {
+      const pixel = queue[head++];
+      const x = pixel % info.width;
+      const y = Math.floor(pixel / info.width);
+      if (x > 0) enqueue(pixel - 1);
+      if (x + 1 < info.width) enqueue(pixel + 1);
+      if (y > 0) enqueue(pixel - info.width);
+      if (y + 1 < info.height) enqueue(pixel + info.width);
+    }
+    for (let pixel = 0; pixel < pixels; pixel += 1) {
+      if (!visited[pixel]) continue;
+      const offset = pixelOffset(pixel);
+      data[offset] = 0;
+      data[offset + 1] = 0;
+      data[offset + 2] = 0;
+      data[offset + 3] = 0;
+    }
+  }
+
+  return sharp(data, { raw: info })
+    .resize({ width: 128, height: 128, fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+async function roleIconEmojis(guild, guildRoles, fetchIcon) {
   const iconRoles = [...new Set(Object.values(roles).map(choice => guildRoles?.get(choice.id))
     .filter(role => role?.icon))];
   if (!iconRoles.length) return new Map();
@@ -75,7 +143,7 @@ async function roleIconEmojis(guild, guildRoles) {
     if (!emoji) {
       try {
         emoji = await guild.emojis.create({
-          attachment: role.iconURL({ extension: 'png', size: 128 }),
+          attachment: await transparentRoleIcon(role.iconURL({ extension: 'png', size: 128 }), fetchIcon),
           name,
           reason: `Wesh Lounge rollenpaneel: icoon van ${role.name}`,
         });
@@ -96,13 +164,13 @@ function emojiText(emoji) {
   return `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>`;
 }
 
-export async function buildPanel(guild) {
+export async function buildPanel(guild, { fetchIcon = fetch } = {}) {
   let guildRoles = guild?.roles?.cache;
   if (guild) {
     try { guildRoles = await guild.roles.fetch(); }
     catch { /* Gebruik de cache en daarna de vaste reserve-emoji. */ }
   }
-  const iconEmojis = guild ? await roleIconEmojis(guild, guildRoles) : new Map();
+  const iconEmojis = guild ? await roleIconEmojis(guild, guildRoles, fetchIcon) : new Map();
   const emojis = Object.fromEntries(Object.entries(roles).map(([key, choice]) => [
     key,
     iconEmojis.get(choice.id) || roleEmoji(guildRoles?.get(choice.id), choice.emoji),
