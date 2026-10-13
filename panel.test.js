@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import sharp from 'sharp';
 import { buildPanel, command, roleEmoji, roles, toggleRole } from './panel.js';
 
 test('paneel koppelt alle melding- en gamerollen aan de juiste knoppen', async () => {
@@ -42,6 +43,10 @@ test('paneel gebruikt automatisch dezelfde emoji als de Discord-rol', async () =
 
 test('rolafbeeldingen worden als serveremoji op de knoppen gebruikt', async () => {
   const created = [];
+  const sourceIcon = await sharp({ create: { width: 16, height: 16, channels: 4, background: '#ffffff' } })
+    .composite([{ input: Buffer.from('<svg width="8" height="8"><rect width="8" height="8" fill="#e02080"/></svg>'), left: 4, top: 4 }])
+    .png()
+    .toBuffer();
   const discordRoles = new Map([
     ['1516850805322285258', {
       id: '1516850805322285258', name: 'Giveaway-ping', icon: 'abc123def456', unicodeEmoji: null,
@@ -60,12 +65,16 @@ test('rolafbeeldingen worden als serveremoji op de knoppen gebruikt', async () =
       },
     },
   };
-  const panel = await buildPanel(guild);
+  const panel = await buildPanel(guild, { fetchIcon: async () => new Response(sourceIcon) });
   const button = panel.components[0].toJSON().components[0];
   assert.equal(button.emoji.id, '999999999999999999');
   assert.equal(created.length, 1);
-  assert.equal(created[0].attachment, 'https://cdn.example/role.png');
-  assert.match(panel.embeds[0].toJSON().fields[0].value, /<:wr_1516850805322285258_abc123de:999999999999999999>/);
+  assert.ok(Buffer.isBuffer(created[0].attachment));
+  const transparent = await sharp(created[0].attachment).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  assert.equal(transparent.data[3], 0);
+  const centerOffset = ((64 * transparent.info.width) + 64) * transparent.info.channels;
+  assert.equal(transparent.data[centerOffset + 3], 255);
+  assert.match(panel.embeds[0].toJSON().fields[0].value, /<:wr2_1516850805322285258_abc123de:999999999999999999>/);
 });
 
 test('rolafbeeldingen geven een duidelijke melding zonder expressierecht', async () => {
