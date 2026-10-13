@@ -120,7 +120,7 @@ client.on(Events.InteractionCreate, async interaction => {
         await channel.send(buildAd(link, role.id, user.id));
         await interaction.editReply('✅ De advertentie is geplaatst!');
       } else {
-        await channel.send(buildPanel());
+        await channel.send(await buildPanel(interaction.guild));
         await interaction.editReply('✅ Het rollenpaneel staat in dit kanaal!');
       }
       return;
