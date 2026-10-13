@@ -40,6 +40,51 @@ test('paneel gebruikt automatisch dezelfde emoji als de Discord-rol', async () =
   assert.equal(roleEmoji({ unicodeEmoji: null, name: 'Test' }, '❔'), '❔');
 });
 
+test('rolafbeeldingen worden als serveremoji op de knoppen gebruikt', async () => {
+  const created = [];
+  const discordRoles = new Map([
+    ['1516850805322285258', {
+      id: '1516850805322285258', name: 'Giveaway-ping', icon: 'abc123def456', unicodeEmoji: null,
+      iconURL: options => { assert.deepEqual(options, { extension: 'png', size: 128 }); return 'https://cdn.example/role.png'; },
+    }],
+  ]);
+  const guildEmojis = new Map();
+  const guild = {
+    roles: { cache: discordRoles, fetch: async () => discordRoles },
+    members: { me: { permissions: { any: () => true } } },
+    emojis: {
+      fetch: async () => guildEmojis,
+      create: async options => {
+        created.push(options);
+        return { id: '999999999999999999', name: options.name, animated: false };
+      },
+    },
+  };
+  const panel = await buildPanel(guild);
+  const button = panel.components[0].toJSON().components[0];
+  assert.equal(button.emoji.id, '999999999999999999');
+  assert.equal(created.length, 1);
+  assert.equal(created[0].attachment, 'https://cdn.example/role.png');
+  assert.match(panel.embeds[0].toJSON().fields[0].value, /<:wr_1516850805322285258_abc123de:999999999999999999>/);
+});
+
+test('rolafbeeldingen geven een duidelijke melding zonder expressierecht', async () => {
+  const discordRoles = new Map([
+    ['1516850805322285258', {
+      id: '1516850805322285258', name: 'Giveaway-ping', icon: 'abc123', unicodeEmoji: null,
+    }],
+  ]);
+  const guild = {
+    roles: { cache: discordRoles, fetch: async () => discordRoles },
+    members: { me: { permissions: { any: () => false } } },
+  };
+  await assert.rejects(buildPanel(guild), error => {
+    assert.equal(error.code, 'ROLE_ICON_EMOJI_PERMISSION');
+    assert.match(error.userMessage, /Expressies maken/);
+    return true;
+  });
+});
+
 function fakeGuild({ hasRole = false, permission = true, position = 1, managed = false, missing = false } = {}) {
   const calls = [];
   const member = { roles: { cache: new Map(hasRole ? [['1516850805322285258', true]] : []),
