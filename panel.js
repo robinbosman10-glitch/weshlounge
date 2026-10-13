@@ -39,6 +39,58 @@ export function roleEmoji(role, fallback) {
   return role?.unicodeEmoji || emojiFromRoleName(role?.name) || fallback;
 }
 
+function customEmojiData(emoji) {
+  return { animated: Boolean(emoji.animated), name: emoji.name, id: emoji.id };
+}
+
+function roleIconEmojiName(role) {
+  const iconPart = role.icon.replace(/[^a-z\d]/gi, '').slice(0, 8).toLowerCase();
+  return `wr_${role.id}_${iconPart}`;
+}
+
+function panelError(message, code, cause) {
+  return Object.assign(new Error(message, { cause }), { code, userMessage: `❌ ${message}` });
+}
+
+async function roleIconEmojis(guild, guildRoles) {
+  const iconRoles = [...new Set(Object.values(roles).map(choice => guildRoles?.get(choice.id))
+    .filter(role => role?.icon))];
+  if (!iconRoles.length) return new Map();
+
+  const me = guild.members.me || await guild.members.fetchMe();
+  if (!me.permissions.any(PermissionFlagsBits.CreateGuildExpressions | PermissionFlagsBits.ManageGuildExpressions)) {
+    throw panelError('Geef de bot **Expressies maken** zodat ik de rolafbeeldingen exact op de knoppen kan zetten.', 'ROLE_ICON_EMOJI_PERMISSION');
+  }
+
+  let guildEmojis;
+  try { guildEmojis = await guild.emojis.fetch(); }
+  catch (error) {
+    throw panelError('Ik kon de serveremoji\'s niet ophalen. Controleer mijn rechten en probeer opnieuw.', 'ROLE_ICON_EMOJI_FETCH', error);
+  }
+
+  const result = new Map();
+  for (const role of iconRoles) {
+    const name = roleIconEmojiName(role);
+    let emoji = [...guildEmojis.values()].find(candidate => candidate.name === name);
+    if (!emoji) {
+      try {
+        emoji = await guild.emojis.create({
+          attachment: role.iconURL({ extension: 'png', size: 128 }),
+          name,
+          reason: `Wesh Lounge rollenpaneel: icoon van ${role.name}`,
+        });
+        guildEmojis.set(emoji.id, emoji);
+      } catch (error) {
+        const slots = error.code === 30008 || error.code === 30018
+          ? ' Er zijn geen vrije serveremoji-plaatsen meer.' : '';
+        throw panelError(`De rolafbeelding van **${role.name}** kon niet als serveremoji worden aangemaakt.${slots}`, 'ROLE_ICON_EMOJI_CREATE', error);
+      }
+    }
+    result.set(role.id, customEmojiData(emoji));
+  }
+  return result;
+}
+
 function emojiText(emoji) {
   if (typeof emoji === 'string') return emoji;
   return `<${emoji.animated ? 'a' : ''}:${emoji.name}:${emoji.id}>`;
@@ -50,9 +102,10 @@ export async function buildPanel(guild) {
     try { guildRoles = await guild.roles.fetch(); }
     catch { /* Gebruik de cache en daarna de vaste reserve-emoji. */ }
   }
+  const iconEmojis = guild ? await roleIconEmojis(guild, guildRoles) : new Map();
   const emojis = Object.fromEntries(Object.entries(roles).map(([key, choice]) => [
     key,
-    roleEmoji(guildRoles?.get(choice.id), choice.emoji),
+    iconEmojis.get(choice.id) || roleEmoji(guildRoles?.get(choice.id), choice.emoji),
   ]));
   const roleLine = key => `${emojiText(emojis[key])} ${roles[key].label}`;
   const logo = new AttachmentBuilder(fileURLToPath(new URL('./assets/logo.png', import.meta.url)), { name: 'wesh-lounge.png' });
