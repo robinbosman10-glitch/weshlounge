@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPanel, command, roles, toggleRole } from './panel.js';
+import { buildPanel, command, roleEmoji, roles, toggleRole } from './panel.js';
 
-test('paneel koppelt alle melding- en gamerollen aan de juiste knoppen', () => {
-  const panel = buildPanel();
+test('paneel koppelt alle melding- en gamerollen aan de juiste knoppen', async () => {
+  const panel = await buildPanel();
   assert.deepEqual(Object.fromEntries(Object.entries(roles).map(([key, role]) => [key, role.id])), {
     'wesh:giveaway': '1516850805322285258',
     'wesh:gaming': '1528781954416378027',
@@ -22,6 +22,22 @@ test('paneel koppelt alle melding- en gamerollen aan de juiste knoppen', () => {
   assert.equal(panel.embeds[0].toJSON().thumbnail.url, 'attachment://wesh-lounge.png');
   assert.equal(panel.files[0].name, 'wesh-lounge.png');
   assert.equal(command.toJSON().default_member_permissions, '8');
+});
+
+test('paneel gebruikt automatisch dezelfde emoji als de Discord-rol', async () => {
+  const discordRoles = new Map([
+    ['1516850805322285258', { unicodeEmoji: '🎁', name: 'Giveaway-ping' }],
+    ['1528781954416378027', { unicodeEmoji: null, name: '🕹️ Gaming-ping' }],
+  ]);
+  const guild = { roles: { cache: new Map(), fetch: async () => discordRoles } };
+  const panel = await buildPanel(guild);
+  const buttons = panel.components.flatMap(row => row.toJSON().components);
+  assert.equal(buttons[0].emoji.name, '🎁');
+  assert.equal(buttons[1].emoji.name, '🕹️');
+  assert.match(panel.embeds[0].toJSON().fields[0].value, /🎁 Giveaway-ping/);
+  assert.match(panel.embeds[0].toJSON().fields[0].value, /🕹️ Gaming-ping/);
+  assert.equal(roleEmoji({ unicodeEmoji: '🔥', name: '🎮 Test' }, '❔'), '🔥');
+  assert.equal(roleEmoji({ unicodeEmoji: null, name: 'Test' }, '❔'), '❔');
 });
 
 function fakeGuild({ hasRole = false, permission = true, position = 1, managed = false, missing = false } = {}) {
