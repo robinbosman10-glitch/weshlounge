@@ -22,6 +22,10 @@ Bij het opstarten plaatst of vernieuwt de bot de officiële serverregels in kana
 
 Daarnaast verstuurt de bot één keer `<@&1427788437297172622>` in kanaal `1555192509209124935`. Alleen die rol mag worden gepingd. Als het bericht al tussen de recente kanaalberichten staat, wordt het niet opnieuw verstuurd.
 
+## Live Minecraft-dashboard
+
+In kanaal `1558586765034520606` houdt de bot automatisch één live statusbericht bij voor de Java-server `116.202.218.205:3084`. Het dashboard toont online/offline, het actuele spelersaantal en maximum, de Minecraft-versie, MOTD, het servericoon en een visuele bezettingsbalk. De status wordt iedere minuut vernieuwd. Na een herstart zoekt de bot zijn bestaande dashboardbericht op en werkt dat bij, zodat geen duplicaten ontstaan. Als de statusdienst tijdelijk niet bereikbaar is, toont het dashboard **Status onbekend** en probeert de bot het bij de volgende update opnieuw.
+
 ## Custom giveaways
 
 | Commando | Werking |
