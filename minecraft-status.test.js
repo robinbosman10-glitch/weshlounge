@@ -29,10 +29,10 @@ test('Java-status gebruikt het opgegeven IP en de niet-standaardpoort', async ()
       }),
     };
   });
-  assert.match(requested.url, /116\.202\.218\.205%3A3084/);
+  assert.match(requested.url, /144\.76\.87\.22%3A2861/);
   assert.equal(requested.options.headers['User-Agent'], 'WeshLoungeDiscordBot/1.0');
   assert.deepEqual(result, { ...onlineStatus, motd: 'Welkom!' });
-  assert.equal(minecraftAddress, '116.202.218.205:3084');
+  assert.equal(minecraftAddress, '144.76.87.22:2861');
 });
 
 test('live dashboard toont status, spelers, versie en serveradres', () => {
@@ -43,7 +43,7 @@ test('live dashboard toont status, spelers, versie en serveradres', () => {
   assert.match(embed.fields[0].value, /7 \/ 20/);
   assert.match(embed.fields[0].value, /🟩/);
   assert.match(embed.fields[1].value, /1\.21\.4/);
-  assert.match(embed.fields[2].value, /116\.202\.218\.205:3084/);
+  assert.match(embed.fields[2].value, /144\.76\.87\.22:2861/);
   assert.ok(embed.thumbnail.url.includes('mcstatus.io'));
   assert.ok(embed.footer.text.startsWith(minecraftStatusMarker));
   assert.deepEqual(payload.allowedMentions, { parse: [] });
