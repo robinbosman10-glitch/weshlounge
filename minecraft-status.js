@@ -1,6 +1,6 @@
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 
-export const minecraftAddress = '116.202.218.205:3084';
+export const minecraftAddress = '144.76.87.22:2861';
 export const minecraftStatusChannelId = '1558586765034520606';
 export const minecraftStatusMarker = 'Wesh Lounge • Minecraft Live Status';
 export const minecraftStatusRefreshMs = 60_000;
