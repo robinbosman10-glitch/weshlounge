@@ -9,6 +9,7 @@ import {
 import { giveawayForms, isGiveawayFormInteraction } from './giveaway-form.js';
 import { syncServerRules } from './server-rules.js';
 import { sendMemberTagOnce } from './member-tag.js';
+import { startMinecraftStatusDashboard, stopMinecraftStatusDashboard } from './minecraft-status.js';
 
 const token = process.env.DISCORD_TOKEN || process.env.TOKEN;
 if (!token) {
@@ -46,6 +47,9 @@ client.once(Events.ClientReady, async ready => {
   await sendMemberTagOnce(ready)
     .then(({ sent }) => console.log(`Membertag ${sent ? 'verstuurd' : 'was al verstuurd'}.`))
     .catch(error => console.error(`Membertag kon niet worden verstuurd: ${error.code ?? error.message}`));
+  await startMinecraftStatusDashboard(ready)
+    .then(({ created }) => console.log(`Minecraft-dashboard ${created ? 'geplaatst' : 'bijgewerkt'} en live gestart.`))
+    .catch(error => console.error(`Minecraft-dashboard kon niet worden gestart: ${error.code ?? error.message}`));
   for (const guild of ready.guilds.cache.values()) await register(guild);
 });
 client.on(Events.GuildCreate, register);
@@ -147,6 +151,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {
   stopGiveawayScheduler();
+  stopMinecraftStatusDashboard();
   client.destroy();
   process.exit(0);
 });
