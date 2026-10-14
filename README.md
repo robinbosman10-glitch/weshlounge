@@ -24,7 +24,7 @@ Daarnaast verstuurt de bot één keer `<@&1427788437297172622>` in kanaal `15551
 
 ## Live Minecraft-dashboard
 
-In kanaal `1558586765034520606` houdt de bot automatisch één live statusbericht bij voor de Java-server `116.202.218.205:3084`. Het dashboard toont online/offline, het actuele spelersaantal en maximum, de Minecraft-versie, MOTD, het servericoon en een visuele bezettingsbalk. De status wordt iedere minuut vernieuwd. Na een herstart zoekt de bot zijn bestaande dashboardbericht op en werkt dat bij, zodat geen duplicaten ontstaan. Als de statusdienst tijdelijk niet bereikbaar is, toont het dashboard **Status onbekend** en probeert de bot het bij de volgende update opnieuw.
+In kanaal `1558586765034520606` houdt de bot automatisch één live statusbericht bij voor de Java-server `144.76.87.22:2861`. Het dashboard toont online/offline, het actuele spelersaantal en maximum, de Minecraft-versie, MOTD, het servericoon en een visuele bezettingsbalk. De status wordt iedere minuut vernieuwd. Na een herstart zoekt de bot zijn bestaande dashboardbericht op en werkt dat bij, zodat geen duplicaten ontstaan. Als de statusdienst tijdelijk niet bereikbaar is, toont het dashboard **Status onbekend** en probeert de bot het bij de volgende update opnieuw.
 
 ## Custom giveaways
 
